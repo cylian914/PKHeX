@@ -13,6 +13,7 @@ public sealed class BatchEditor
     private int Modified { get; set; }
     private int Iterated { get; set; }
     private int Failed { get; set; }
+    private Dictionary<string, string> Error = new Dictionary<string, string>();
 
     /// <summary>
     /// Tries to modify the <see cref="PKM"/>.
@@ -33,7 +34,7 @@ public sealed class BatchEditor
             return false;
         }
 
-        var result = BatchEditing.TryModifyPKM(pk, filters, modifications);
+        var result = BatchEditing.TryModifyPKM(pk, filters, modifications, Error);
         if (result != ModifyResult.Skipped)
             Iterated++;
         if (result.HasFlag(ModifyResult.Error))
@@ -63,8 +64,13 @@ public sealed class BatchEditor
         int len = Iterated / sets.Count;
         string maybe = sets.Count == 1 ? string.Empty : "~";
         string result = string.Format(MsgBEModifySuccess, maybe, ctr, len);
-        if (Failed > 0)
-            result += Environment.NewLine + maybe + string.Format(MsgBEModifyFailError, Failed);
+        if (Failed > 0) {
+            result += Environment.NewLine + maybe + string.Format(MsgBEModifyFailError, Failed) + "\n";
+            foreach(KeyValuePair<string, string> e in Error) {
+                result += e.Key + e.Value + "\n";
+            }
+        }
+
         return result;
     }
 
@@ -83,7 +89,6 @@ public sealed class BatchEditor
             foreach (var set in sets)
                 editor.Process(pk, set.Filters, set.Instructions);
         }
-
         return editor;
     }
 

@@ -291,6 +291,8 @@ public static class MessageStrings
     public static string MsgExportFolder { get; set; } = "Please select the folder where the files will be saved to.";
     public static string MsgExportFolderAdvice { get; set; } = "This can be the same folder as the source of PKM files.";
 
+    //TODO error message
+
     #endregion
 
     #region Misc

@@ -343,9 +343,9 @@ public static class BatchEditing
     /// <param name="filters">Filters which must be satisfied prior to any modifications being made.</param>
     /// <param name="modifications">Modifications to perform on the <see cref="pk"/>.</param>
     /// <returns>Result of the attempted modification.</returns>
-    public static bool TryModify(PKM pk, IEnumerable<StringInstruction> filters, IEnumerable<StringInstruction> modifications)
+    public static bool TryModify(PKM pk, IEnumerable<StringInstruction> filters, IEnumerable<StringInstruction> modifications, Dictionary<string, string>? error = null)
     {
-        var result = TryModifyPKM(pk, filters, modifications);
+        var result = TryModifyPKM(pk, filters, modifications, error);
         return result == ModifyResult.Modified;
     }
 
@@ -356,7 +356,7 @@ public static class BatchEditing
     /// <param name="filters">Filters which must be satisfied prior to any modifications being made.</param>
     /// <param name="modifications">Modifications to perform on the <see cref="pk"/>.</param>
     /// <returns>Result of the attempted modification.</returns>
-    internal static ModifyResult TryModifyPKM(PKM pk, IEnumerable<StringInstruction> filters, IEnumerable<StringInstruction> modifications)
+    internal static ModifyResult TryModifyPKM(PKM pk, IEnumerable<StringInstruction> filters, IEnumerable<StringInstruction> modifications, Dictionary<string, string>? errorString = null)
     {
         if (!pk.ChecksumValid || pk.Species == 0)
             return ModifyResult.Skipped;
@@ -373,6 +373,7 @@ public static class BatchEditing
             // Swallow any error because this can be malformed user input.
             catch (Exception ex)
             {
+                if (errorString != null) errorString[String.Format(MsgBEModifyFailCompare, cmd.PropertyName, cmd.PropertyValue)] = ex.Message + " " + ex.StackTrace;
                 Debug.WriteLine(MsgBEModifyFailCompare + " " + ex.Message, cmd.PropertyName, cmd.PropertyValue);
                 return ModifyResult.Error;
             }
@@ -393,6 +394,7 @@ public static class BatchEditing
             // Swallow any error because this can be malformed user input.
             catch (Exception ex)
             {
+                if (errorString != null) errorString[String.Format(MsgBEModifyFailCompare, cmd.PropertyName, cmd.PropertyValue)] = ex.Message + " " + ex.StackTrace;
                 Debug.WriteLine(MsgBEModifyFail + " " + ex.Message, cmd.PropertyName, cmd.PropertyValue);
                 error = true;
             }
